@@ -12,13 +12,12 @@ from skimage.segmentation import (clear_border,
 from skimage.morphology import binary_closing, watershed
 from multiprocessing import Pool
 from time import time
-from itertools import groupby
+from itertools import groupby, chain
 
 from F_TrackHandler import *
 from F_Lib import update_console
 import settings
 from Cell import *
-
 
 def segmentation_select():
     if settings.seletedConfiguration['optionSegmentation'] == settings.list_segmentation[0]:
@@ -208,46 +207,37 @@ def tracker(listsOfCells):
     #Minimum observed distance between cells a useful metric to determine this threshold?
 
     #account for frame -1 births? determine how manual smd handles births prior to frame 0
-    mitosisCellLists = [[]]
+    novelCells = []
     for single_cell in cellLists:
         cellBirth = single_cell.getBirth()
         if cellBirth >= -1:
-            while cellBirth + 2 > len(mitosisCellLists):
-                mitosisCellLists.append([])
-            mitosisCellLists[cellBirth+1].append(single_cell)
+            single_cell.regressLocTime()
+            novelCells.append(single_cell)
 
     #mitosis_threshold = float("inf")
     mitosis_threshold = distFloor
 
-    for cellList in mitosisCellLists[1:]:
-        for single_cell1 in cellList:
-            for single_cell2 in cellList:
-                if (single_cell1 is not single_cell2) and (single_cell1.parent is None and single_cell2.parent is None):
-                    cell1_pos = single_cell1.regressLocTime()
-                    cell2_pos = single_cell2.regressLocTime()
-                    #find implementation used in Point class or make one
-                    if pointDist(cell1_pos, cell2_pos) <= mitosis_threshold:
-                        ref_point_x = (cell1_pos.x + cell2_pos.x) /2
-                        ref_point_y = (cell1_pos.y + cell2_pos.y) / 2
-                        ref_point_z = (cell1_pos.z + cell2_pos.z) / 2
-                        ref_point = Point(single_cell1.getBirth(), ref_point_x,ref_point_y,ref_point_z)
-                        for prevList in reversed(mitosisCellLists[0:(single_cell1.getBirth() + 1)]):
-                            for parentCandidate in prevList:
-                                if (parentCandidate.locAt(single_cell1.getBirth()) is not None
-                                and pointDist(ref_point, parentCandidate.locAt(single_cell1.getBirth())) <= mitosis_threshold):
-                                    #determine number of frames between parent cell birth and mitosis, append appropriate
-                                    #number of "a"s to gen name?
-                                    parentCandidate.mitosis(single_cell1, single_cell2)
-                                    update_console('Cell split: ID: {} into {}, {}, Frame: {}'.format(parentCandidate.id,
-                                    single_cell1.id, single_cell2.id, single_cell1.getBirth()))
-                                    #break back to first for loop
-                                    break
-                            if single_cell1.parent is not None or single_cell2.parent is not None:
-                                break
-                if single_cell2.parent is not None:
+    for single_cell1 in cellLists:
+        if single_cell1.daughterL is None:
+            for single_cell2 in novelCells:
+                if (single_cell1 is not single_cell2) and single_cell2.parent is None:
+                    cell1_pos = single_cell1.locAt(single_cell2.regressedLocTime.time)
+                    if cell1_pos is not None and cellPointDist(cell1_pos, single_cell2.regressedLocTime) <= mitosis_threshold:
+                        size = len(single_cell1.locOverTime)
+                        idx_list = [idx + 1 for idx, val in enumerate(single_cell1.locOverTime) if val == cell1_pos]
+                        splitLocTime = [single_cell1.locOverTime[i: j] for i, j in zip([0] + idx_list, idx_list + ([size] if idx_list[-1] != size else []))]
+                        if len(splitLocTime) <= 1:
+                            break
+                        single_cell1.locOverTime = splitLocTime[0]
+                        left_daughter = Cell(counter)
+                        counter += 1
+                        left_daughter.locOverTime = splitLocTime[1]
+                        cellLists.append(left_daughter)
+                        single_cell1.mitosis(left_daughter, single_cell2)
+                        update_console('Cell split: ID: {} Frame: {}'.format(single_cell1.id, single_cell2.getBirth()))
+                        break
+                else:
                     break
-            if single_cell1.parent is not None:
-                break
 
     t1 = time()
     update_console("Finished. Took {} seconds to process".format(t1 - t0))

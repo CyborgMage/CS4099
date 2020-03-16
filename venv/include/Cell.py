@@ -1,11 +1,28 @@
 # This is written by Gareth
 from Point import *
 
+from math import sqrt
+
+import re
 
 def cellLengthSort(cell):
     return abs(cell.locOverTime[-1].time - cell.locOverTime[0].time)
 
-    
+def cellPointDist(point1, point2):
+    if abs(point1.z - point2.z) > 1:
+        return float("inf");
+    else:
+        return sqrt((point1.x - point2.x)**2 + (point1.y - point2.y)**2)
+
+def getChildCount(daughter):
+    if daughter is None:
+        return 0
+    if daughter.daughterL is None and daughter.daughterR is None:
+        return 1
+    else:
+        return getChildCount(daughter.daughterL) + getChildCount(daughter.daughterR)
+
+
 class Cell:
 
     #establish gen naming system
@@ -15,16 +32,18 @@ class Cell:
         self.daughterR = None
         self.parent = None
         self.genName = ""
+        self.idString = ""
         self.locOverTime = []
+        self.regressedLocTime = None
         self.clustered = -1
 
     def mitosis(self,left,right):
         self.daughterL = left
         left.parent = self
-        left.genName = self.genName + "l"
+        left.genName = "l"
         self.daughterR = right
         right.parent = self
-        right.genName = self.genName + "r"
+        right.genName = "r"
 
     def death(self):
         self.locOverTime[-1].comment = "Cell has Died"
@@ -57,17 +76,7 @@ class Cell:
         locFuture = self.locOverTime[1]
         vx = locFuture.x - locPresent.x
         vy = locFuture.y - locPresent.y
-        vz = locFuture.z - locPresent.z
-        locPast = Point(self.locOverTime[0].time - 1, locPresent.x - vx, locPresent.y - vy, locPresent.z - vz)
-        return locPast
-
-    def getChildCount(self, daughter):
-        if daughter is None:
-            return 0
-        if (daughter.daughterL is None and daughter.daughterR is None):
-            return 1
-        else:
-            return getChildCount(daughter.daughterL) + getChildCount(daughter.daughterR)
+        self.regressedLocTime = Point(self.locOverTime[0].time - 1, locPresent.x - vx, locPresent.y - vy, self.locOverTime[0].z)
 
     def to_dict(self):
         loc = self.locOverTime[-1]
@@ -84,7 +93,6 @@ class Cell:
     def setClustered(self, cluster):
         self.clustered = cluster
 
-    #this means of determining birth frame seems unreliable
     def getBirth(self):
         if len(self.locOverTime) > 0:
             return self.locOverTime[0].time - 1
@@ -96,18 +104,24 @@ class Cell:
     # Track mitosis level
     def __str__(self):
         birth = self.getBirth()
+        genLength = 0
+        if self.parent is None:
+            self.idString = str(self.id)
+        else:
+            self.idString = self.parent.idString + self.genName
+            genLength = len(re.findall('[lr]', self.idString))
         rep = ""
-        rep += ("{} {} 0 0 genName\n".format(self.getChildCount(self.daughterL),
-                                             self.getChildCount(self.daughterR)))
+        rep += ("{} {} 0 0 genName\n".format(getChildCount(self.daughterL),
+                                             getChildCount(self.daughterR)))
         rep += ("{} 0 -1 -1 genName2\n".format(birth))
-        rep += ("{} {} -1 -1 0 -1 {}\n".format(birth, len(self.genName), str(self.id) + self.genName))
+        rep += ("{} {} -1 -1 0 -1 {}\n".format(birth, genLength, self.idString))
         rep += ("{}\n".format(len(self.locOverTime)))
         for p in self.locOverTime:
             rep += ("{} {} {} {} -1 -1 -1 {}\n".format(p.time,
                                                        p.y, p.x, p.z, p.comment))
-        if self.daughterL != None:
+        if self.daughterL is not None:
             rep += str(self.daughterL)
-        if self.daughterR != None:
+        if self.daughterR is not None:
             rep += str(self.daughterR)
         rep += "---\n"
         return rep

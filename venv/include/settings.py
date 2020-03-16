@@ -43,7 +43,7 @@ def init():
     global track_configuration
     track_configuration = dict()
 
-    track_configuration['directory path'] = "../green_focus/"
+    track_configuration['directory path'] = "../green_focus/ch00_green/"
 
     global evaluate_auto
     evaluate_auto = dict()

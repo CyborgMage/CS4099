@@ -33,6 +33,7 @@ class Cell:
         self.parent = None
         self.genName = ""
         self.idString = ""
+        self.attachPoint = ""
         self.locOverTime = []
         self.regressedLocTime = None
         self.clustered = -1
@@ -99,21 +100,26 @@ class Cell:
         else:
             return -2
 
+    def attach(self, attach):
+        self.attachPoint = attach
+
     # Overwritten String Representation for Outputting.
     # Modify to construct gen name as appropriate from relation to parent cells (find meaning of a/l split)
     # Track mitosis level
     def __str__(self):
         birth = self.getBirth()
         genLength = 0
+        parentName = ""
         if self.parent is None:
             self.idString = str(self.id)
+            parentName = self.attachPoint
         else:
             self.idString = self.parent.idString + self.genName
+            parentName = self.parent.idString + self.parent.genName
             genLength = len(re.findall('[lr]', self.idString))
         rep = ""
-        rep += ("{} {} 0 0 genName\n".format(getChildCount(self.daughterL),
-                                             getChildCount(self.daughterR)))
-        rep += ("{} 0 -1 -1 genName2\n".format(birth))
+        rep += ("{} {} 0 0 {}\n".format(getChildCount(self.daughterL), getChildCount(self.daughterR), parentName))
+        rep += ("{} 0 -1 -1 {}\n".format(birth, self.idString))
         rep += ("{} {} -1 -1 0 -1 {}\n".format(birth, genLength, self.idString))
         rep += ("{}\n".format(len(self.locOverTime)))
         for p in self.locOverTime:

@@ -73,15 +73,15 @@ def outputData(cellLists):
     text = "SIMI*BIOCELL\n400\n---\n0\n---\n1 1\n0\n---\n"
     i = 1
     switcher = {
-        1: "1 1 0 0 P0\n-2 0 -1 -1\n-3 0 -1 -1 4 16711935\n0",
-        2: "1 1 0 0 AB\n-2 0 -1 -1\n0 0 -1 -1 0 255\n0",
-        3: "1 1 0 0 ABa\n-2 0 -1 -1\n3 0 -1 -1 0 255\n0",
-        4: "1 1 0 0 ABaa\n-2 0 -1 -1 ABal\n6 0 -1 -1 0 255 ABal\n0",
-        5: "1 1 0 0 ABaaa\n-2 0 -1 -1 ABala\n9 0 -1 -1 0 255 ABala\n0",
-        6: "1 1 0 0 ABaaaa\n-2 0 -1 -1 ABalaa\n11 0 -1 -1 0 255 ABalaa\n0",
-        7: "1 1 0 0 ABaaaaa\n-2 0 -1 -1 ABalaaa\n14 0 -1 -1 0 255 ABalaaa\n0",
-        8: "1 1 0 0 ABaaaaaa\n-2 0 -1 -1 ABalaaaa\n17 0 -1 -1 0 33023 ABalaaaa\n0",
-        9: "1 1 0 0 ABaaaaaaa\n-2 0 -1 -1 ABalaaaal\n20 0 -1 -1 0 33023 ABalaaaal\n0"
+        1: "1 1 0 0 P0\n-2 0 -1 -1\n-3 0 -1 -1 4 16711935\n0\n---\n",
+        2: "1 1 0 0 AB\n-2 0 -1 -1\n0 0 -1 -1 0 255\n0\n---\n",
+        3: "1 1 0 0 ABa\n-2 0 -1 -1\n3 0 -1 -1 0 255\n0\n---\n",
+        4: "1 1 0 0 ABaa\n-2 0 -1 -1 ABal\n6 0 -1 -1 0 255 ABal\n0\n---\n",
+        5: "1 1 0 0 ABaaa\n-2 0 -1 -1 ABala\n9 0 -1 -1 0 255 ABala\n0\n---\n",
+        6: "1 1 0 0 ABaaaa\n-2 0 -1 -1 ABalaa\n11 0 -1 -1 0 255 ABalaa\n0\n---\n",
+        7: "1 1 0 0 ABaaaaa\n-2 0 -1 -1 ABalaaa\n14 0 -1 -1 0 255 ABalaaa\n0\n---\n",
+        8: "1 1 0 0 ABaaaaaa\n-2 0 -1 -1 ABalaaaa\n17 0 -1 -1 0 33023 ABalaaaa\n0\n---\n",
+        9: "1 1 0 0 ABaaaaaaa\n-2 0 -1 -1 ABalaaaal\n20 0 -1 -1 0 33023 ABalaaaal\n0\n---\n"
     }
     dummyName = "ABalaaaal"
     while i < 10:

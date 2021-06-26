@@ -215,8 +215,9 @@ def tracker(listsOfCells):
             novelCells.append(single_cell)
 
     #mitosis_threshold = float("inf")
-    mitosis_threshold = distFloor
+    mitosis_threshold = distFloor * 2
 
+    #No parent restriction necessary?
     for single_cell1 in cellLists:
         if single_cell1.daughterL is None:
             for single_cell2 in novelCells:

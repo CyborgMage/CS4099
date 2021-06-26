@@ -15,12 +15,10 @@ def cellPointDist(point1, point2):
         return sqrt((point1.x - point2.x)**2 + (point1.y - point2.y)**2)
 
 def getChildCount(daughter):
-    if daughter is None:
-        return 0
-    if daughter.daughterL is None and daughter.daughterR is None:
+    if daughter.daughterL is None:
         return 1
     else:
-        return getChildCount(daughter.daughterL) + getChildCount(daughter.daughterR)
+        return 1 + getChildCount(daughter.daughterL) + getChildCount(daughter.daughterR)
 
 
 class Cell:
@@ -33,7 +31,6 @@ class Cell:
         self.parent = None
         self.genName = ""
         self.idString = ""
-        self.attachPoint = ""
         self.locOverTime = []
         self.regressedLocTime = None
         self.clustered = -1
@@ -109,25 +106,32 @@ class Cell:
     def __str__(self):
         birth = self.getBirth()
         genLength = 0
-        parentName = ""
         if self.parent is None:
             self.idString = str(self.id)
-            parentName = self.attachPoint
+            parentName = "P0"
         else:
             self.idString = self.parent.idString + self.genName
             parentName = self.parent.idString + self.parent.genName
             genLength = len(re.findall('[lr]', self.idString))
+        if self.daughterL is None:
+            daughterLCount = 0
+            daughterRCount = 0
+        else:
+            daughterLCount = getChildCount(self.daughterL)
+            daughterRCount = getChildCount(self.daughterR)
         rep = ""
-        rep += ("{} {} 0 0 {}\n".format(getChildCount(self.daughterL), getChildCount(self.daughterR), parentName))
+        rep += ("{} {} 0 0 {}\n".format(daughterLCount, daughterRCount, parentName))
         rep += ("{} 0 -1 -1 {}\n".format(birth, self.idString))
         rep += ("{} {} -1 -1 0 -1 {}\n".format(birth, genLength, self.idString))
-        rep += ("{}\n".format(len(self.locOverTime)))
+        rep += ("{} ID:{}\n".format(len(self.locOverTime), self.id))
         for p in self.locOverTime:
             rep += ("{} {} {} {} -1 -1 -1 {}\n".format(p.time,
                                                        p.y, p.x, p.z, p.comment))
-        if self.daughterL is not None:
-            rep += str(self.daughterL)
-        if self.daughterR is not None:
-            rep += str(self.daughterR)
+        # if self.daughterL is not None:
+        #     rep += "---\n"
+        #     rep += str(self.daughterL)
+        # if self.daughterR is not None:
+        #     rep += "---\n"
+        #     rep += str(self.daughterR)
         rep += "---\n"
         return rep

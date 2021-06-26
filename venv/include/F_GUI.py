@@ -27,7 +27,7 @@ def fn_error_tracking():
         temp_str = temp_str.split('.')[0]
         csv_file_name = '../Results/ErrorTrack <Name>.csv'.replace('<Name>', temp_str)
         error_tracking(settings.evaluate_auto['Auto File Name'], settings.evaluate_auto['Manual File Name'],
-                       csv_file_name)
+                       csv_file_name, True)
         update_console('Completed evaluation for error in cell tracking...')
 
 
@@ -42,7 +42,7 @@ def fn_error_centroid():
         temp_str = temp_str.split('.')[0]
         csv_file_name = '../Results/ErrorTrack <Name>.csv'.replace('<Name>', temp_str)
         error_centroid(settings.evaluate_auto['Auto File Name'], settings.evaluate_auto['Manual File Name'],
-                       csv_file_name)
+                       csv_file_name, True)
         update_console('Completed evaluation for error in cell centroid detection...')
 
 

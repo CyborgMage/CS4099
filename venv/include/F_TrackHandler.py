@@ -1,5 +1,6 @@
 from Cell import *
 from F_Lib import update_console
+from binarytree import *
 import math
 
 distFloor = 20
@@ -71,26 +72,66 @@ def tooShort(cell, time):
 # Output Framework for Lists of Cells.
 def outputData(cellLists):
     text = "SIMI*BIOCELL\n400\n---\n0\n---\n1 1\n0\n---\n"
-    i = 1
-    switcher = {
-        1: "1 1 0 0 P0\n-2 0 -1 -1\n-3 0 -1 -1 4 16711935\n0\n---\n",
-        2: "1 1 0 0 AB\n-2 0 -1 -1\n0 0 -1 -1 0 255\n0\n---\n",
-        3: "1 1 0 0 ABa\n-2 0 -1 -1\n3 0 -1 -1 0 255\n0\n---\n",
-        4: "1 1 0 0 ABaa\n-2 0 -1 -1 ABal\n6 0 -1 -1 0 255 ABal\n0\n---\n",
-        5: "1 1 0 0 ABaaa\n-2 0 -1 -1 ABala\n9 0 -1 -1 0 255 ABala\n0\n---\n",
-        6: "1 1 0 0 ABaaaa\n-2 0 -1 -1 ABalaa\n11 0 -1 -1 0 255 ABalaa\n0\n---\n",
-        7: "1 1 0 0 ABaaaaa\n-2 0 -1 -1 ABalaaa\n14 0 -1 -1 0 255 ABalaaa\n0\n---\n",
-        8: "1 1 0 0 ABaaaaaa\n-2 0 -1 -1 ABalaaaa\n17 0 -1 -1 0 33023 ABalaaaa\n0\n---\n",
-        9: "1 1 0 0 ABaaaaaaa\n-2 0 -1 -1 ABalaaaal\n20 0 -1 -1 0 33023 ABalaaaal\n0\n---\n"
-    }
-    dummyName = "ABalaaaal"
-    while i < 10:
-        text += switcher[i]
-        i += 1
+    j = 1
+    availableCells = []
+    dummyList = []
+    indexTree = None
     for cell in cellLists:
+        if len(availableCells) == 0 and indexTree is not None:
+            nodes = indexTree.preorder
+            for node in nodes:
+                if node.value >= 0:
+                    text += str(dummyList[node.value])
+                else:
+                    text += str(cellLists[abs(node.value + 1)])
+        if len(availableCells) == 0:
+            nodeCap = pow(2, 10)
+            i = (nodeCap * (j - 1)) + 1
+            dummyList = []
+            while i <= nodeCap * j:
+                dummyCell = Cell("A{}".format(i))
+                dummyList.append(dummyCell)
+                i += 1
+            indices = list(range(1, nodeCap))
+            indexTree = build(indices)
+            availableCells = []
+            for node in indexTree:
+                if node.left is not None:
+                    dummyList[node.value].daughterL = dummyList[node.left.value]
+                    dummyList[node.left.value].parent = dummyList[node.value]
+                    dummyList[node.value].daughterR = dummyList[node.right.value]
+                    dummyList[node.right.value].parent = dummyList[node.value]
+                else:
+                    availableCells.append(node)
+            j += 1
         if cell.parent is None:
-            cell.attach(dummyName)
-        text += str(cell)
+            if availableCells[0].left is None:
+                cell.parent = dummyList[availableCells[0].value]
+                availableCells[0].daughterL = cell
+                x = cellLists.index(cell)
+                x = (x * -1) - 1
+                availableCells[0].left = Node(x)
+                if cell.daughterL is not None:
+                    x = cellLists.index(cell.daughterL)
+                    x = (x * -1) - 1
+                    availableCells[0].left.left = Node(x)
+                    x = cellLists.index(cell.daughterR)
+                    x = (x * -1) - 1
+                    availableCells[0].left.right = Node(x)
+            else:
+                cell.parent = dummyList[availableCells[0].value]
+                availableCells[0].daughterR = cell
+                x = cellLists.index(cell)
+                x = (x * -1) - 1
+                availableCells[0].right = Node(x)
+                if cell.daughterL is not None:
+                    x = cellLists.index(cell.daughterL)
+                    x = (x * -1) - 1
+                    availableCells[0].right.left = Node(x)
+                    x = cellLists.index(cell.daughterR)
+                    x = (x * -1) - 1
+                    availableCells[0].right.right = Node(x)
+                del availableCells[0]
     file_save = "../Output/output.smd"
     txt_output = open(file_save, 'w')
     update_console("Saving the SBD file at location: " + file_save)
